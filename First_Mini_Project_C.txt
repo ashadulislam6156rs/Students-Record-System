@@ -1,0 +1,1623 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to check if the input is an integer
+int checkInteger(char *st)
+{
+    while (*st)
+    {
+        if (!isdigit(*st))
+        {
+            return 0;
+        }
+        st++;
+    }
+    return 1;
+}
+
+// Function to check if the input is a valid floating-point number
+float checkFloat(char *st)
+{
+    int cnt = 0;
+    while (*st)
+    {
+        if (*st == '.')
+        {
+            if (cnt == 1)
+            {
+                return 0;
+            }
+            else
+            {
+                cnt++;
+            }
+        }
+        else if (!isdigit(*st))
+        {
+            return 0;
+        }
+        st++;
+    }
+    return 1;
+}
+
+// Structure to hold student details
+typedef struct
+{
+
+    int numberOfCourse;
+    char course[10][100];
+    int id;
+    char name[100];
+    float marks[100];
+    int choice;
+    int num;
+    float Allmarks;
+    int numberOfStudents;
+
+} StudentDetails;
+
+// Function to add student details
+void Add_Students()
+{
+    FILE *file = fopen("Student_Record.txt", "ab");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    StudentDetails student;
+    int cnt = 0;
+    char NumberOfStudents[100];
+    printf("\nEnter You How Many Students Want To Take: ");
+    scanf("%s",NumberOfStudents);
+       while (!checkInteger(NumberOfStudents))
+        {
+            printf("You Entered Wrong! \nPlease Enter valid Number Of Students: ");
+            scanf("%s", NumberOfStudents);
+            cnt++;
+            if (cnt == 5)
+            {
+                printf("Program finished!\n");
+                return;
+            }
+        }
+        student.numberOfStudents = atoi(NumberOfStudents);
+
+        int StudentCnt=1;
+
+    while(student.numberOfStudents--)
+    {
+
+        printf("Enter Your Student %d ID: ",StudentCnt);
+        char id[30];
+        scanf("%s", id);
+        while (!checkInteger(id))
+        {
+            printf("You Entered Wrong! \nPlease Enter valid id: ");
+            scanf("%s", id);
+            cnt++;
+            if (cnt == 5)
+            {
+                printf("Program finished!\n");
+                return;
+            }
+        }
+        student.id = atoi(id);
+
+
+        getchar();
+
+
+        printf("Enter your Student Name: ");
+        fgets(student.name, sizeof(student.name), stdin);
+        student.name[strcspn(student.name, "\n")] = 0;
+
+
+        printf("Enter Your Student Course Number: ");
+        char CourseNumber[30];
+        scanf("%s", CourseNumber);
+        cnt = 0;
+        while (!checkInteger(CourseNumber))
+        {
+            printf("You Entered Wrong! \nPlease Enter valid Course Number: ");
+            scanf("%s", CourseNumber);
+            cnt++;
+            if (cnt == 5)
+            {
+                printf("Program finished!\n");
+                return;
+            }
+        }
+        student.numberOfCourse = atoi(CourseNumber);
+
+
+        getchar();
+        for (int i = 0; i < student.numberOfCourse; i++)
+        {
+            printf("Enter Your Student Course Name %d: ", i + 1);
+            fgets(student.course[i], sizeof(student.course[i]), stdin);
+            student.course[i][strcspn(student.course[i], "\n")] = 0;
+        }
+
+        // Input course marks
+        float totalMark = 0;
+        for (int j = 0; j < student.numberOfCourse; j++)
+        {
+            printf("Enter Your Student Course %d Mark: ", j + 1);
+            char mark[20];
+            scanf("%s", mark);
+            cnt = 0;
+            while (!checkFloat(mark))
+            {
+                printf("Enter valid mark: ");
+                scanf("%s", mark);
+                cnt++;
+                if (cnt > 4)
+                {
+                    printf("You typed multiple invalid marks!\n");
+                    return;
+                }
+            }
+            student.marks[j] = atof(mark);
+            totalMark += student.marks[j];
+        }
+        student.Allmarks = totalMark;
+        fwrite(&student, sizeof(StudentDetails), 1, file);
+        StudentCnt++;
+
+    }
+
+    fclose(file);
+
+
+    printf("Student added successfully!\n\n");
+}
+
+void View_Students()
+{
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    StudentDetails student;
+    printf("\n");
+
+    printf("Student ID\tStudent Name\tStudent Course\tStudent Marks\n");
+    printf("----------------------------------------------------------------\n");
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        printf("%d\t\t%s\t", student.id, student.name);
+        printf("Course %s\tMark %.2f\n",student.course[0],student.marks[0]);
+        int i;
+        for(i=1; i<student.numberOfCourse; i++)
+        {
+            printf("\t\t\t\tCourse %s\tMark %.2f\n",student.course[i],student.marks[i]);
+        }
+        printf("\n");
+
+    }
+
+
+    fclose(file);
+}
+
+void Search_Student_ID()
+{
+
+    StudentDetails student;
+
+    char checkId[30] ;
+
+    printf("Enter the Student ID to search: ");
+    scanf("%s", checkId);
+
+
+    int cnt = 0;
+
+    while(!checkInteger(checkId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", checkId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int searchID = atoi(checkId);
+    student.id = searchID;
+
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    int found = 0;
+
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        if (student.id == searchID)
+        {
+            printf("Record found:\n");
+            printf("Student ID\tStudent Name\tStudent Course\tStudent Marks\n");
+            printf("----------------------------------------------------------------\n");
+            printf("%d\t\t%s\t", student.id, student.name);
+            printf("Course %s\tMark %.2f\n",student.course[0],student.marks[0]);
+            int i;
+            for(i=1; i<student.numberOfCourse; i++)
+            {
+                printf("\t\t\t\tCourse %s\tMark %.2f\n",student.course[i],student.marks[i]);
+            }
+            printf("\n");
+            found = 1;
+            break;
+        }
+    }
+
+
+    if (!found)
+    {
+        printf("No record found for ID %s.\n", searchID);
+    }
+
+    fclose(file);
+
+}
+
+void Search_Student_Name()
+{
+
+    StudentDetails student;
+    char searchName[100];
+
+    getchar();
+    printf("Enter your Student Name: ");
+
+    fgets(searchName, sizeof(searchName), stdin);
+    searchName[strcspn(searchName, "\n")] = 0;
+
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    int found = 0;
+
+
+    printf("Student ID\tStudent Name\tStudent Course\tStudent Marks\n");
+    printf("----------------------------------------------------------------\n");
+    int count=1;
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+
+        int compareWithName = !strcmp(student.name, searchName);
+        if (compareWithName)
+        {
+
+            printf("Record found: %d\n",count);
+            count++;
+            printf("%d\t\t%s\t", student.id, student.name);
+            printf("Course %s\tMark %.2f\n",student.course[0],student.marks[0]);
+            int i;
+            for(i=1; i<student.numberOfCourse; i++)
+            {
+                printf("\t\t\t\tCourse %s\tMark %.2f\n",student.course[i],student.marks[i]);
+            }
+
+            found = 1;
+
+            if(compareWithName)
+            {
+
+                continue;
+            }
+            else
+            {
+
+                break;
+
+            }
+
+        }
+
+
+    }
+
+
+    if (!found)
+    {
+        printf("No record found for Student Name %s.\n", searchName);
+    }
+
+    fclose(file);
+
+}
+
+void Search_Student_Name_And_Student_ID()
+{
+
+    StudentDetails student;
+    char searchName[100];
+    char searchId[30];
+
+    getchar(); // বাফার পরিষ্কার করার জন্য
+    printf("Enter your Student Name: ");
+    fgets(searchName, sizeof(searchName), stdin);
+    searchName[strcspn(searchName, "\n")] = 0; // newline সরানো
+
+    printf("Enter the Student ID to search: ");
+    scanf("%s", searchId);
+
+    int cnt = 0;
+
+    while(!checkInteger(searchId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", searchId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int checkId = atoi(searchId);
+    student.id = checkId;
+
+
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+
+        int compareWithName = !strcmp(student.name, searchName);
+        if (compareWithName)
+        {
+
+            if(checkId == student.id)
+            {
+                printf("Record found:\n");
+                printf("Student ID\tStudent Name\tStudent Course\tStudent Marks\n");
+                printf("----------------------------------------------------------------\n");
+                printf("%d\t\t%s\t", student.id, student.name);
+                printf("Course %s\tMark %.2f\n",student.course[0],student.marks[0]);
+                int i;
+                for(i=1; i<student.numberOfCourse; i++)
+                {
+                    printf("\t\t\t\tCourse %s\tMark %.2f\n",student.course[i],student.marks[i]);
+                }
+                printf("\n");
+
+                fclose(file);
+                return ;
+            }
+
+
+
+
+        }
+    }
+
+
+
+    printf("No record found for Student Name %s And Student Id %s.\n", searchName,searchId);
+
+
+    fclose(file);
+
+
+
+}
+
+void Search_Students()
+{
+
+    StudentDetails student;
+
+    do
+    {
+        printf("\n");
+        printf("<<-----Student Search System----->>\n");
+        printf("1. Student ID to Search\n");
+        printf("2. Student Name to Search\n");
+        printf("3. Student Name And Student ID to Search(If Two Students Name Same)\n");
+        printf("4. Exit\n");
+        printf("Choice Your Search Student(Enter number): ");
+
+        char choice_num[30];
+        scanf("%s", choice_num);
+        int cnt = 0;
+        while(!checkInteger(choice_num))
+        {
+
+            printf("You Entered Wrong! \n");
+            printf("Please Enter valid choice Number : ");
+            scanf("%s", choice_num);
+            cnt++;
+            if(cnt ==5 )
+            {
+                printf("Programme finished!\n");
+                return;
+            }
+
+        }
+
+        int num = atoi(choice_num);
+        student.choice = num;
+
+
+        switch (student.choice)
+        {
+        case 1:
+            Search_Student_ID();
+            break;
+        case 2:
+            Search_Student_Name();
+            break;
+        case 3:
+            Search_Student_Name_And_Student_ID();
+            break;
+        case 4:
+            printf("Exiting...\n");
+            break;
+        default:
+            printf("Invalid choice. Please try again.\n");
+
+        }
+
+
+    }
+    while(student.choice!=4);
+
+}
+
+void Update_Student_ID()
+{
+
+    StudentDetails student;
+    char updateId[30];
+
+    printf("Enter the Student ID to update: ");
+    scanf("%s",updateId);
+
+    int cnt = 0;
+
+
+    while(!checkInteger(updateId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", updateId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int updateID = atoi(updateId);
+    student.id = updateID;
+
+    FILE *file = fopen("Student_Record.txt", "rb+");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    int found = 0;
+    int count=0;
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        if (student.id == updateID)
+        {
+            printf("Record found.\n");
+            printf(" Enter new Student Id: ");
+            char newID[30];
+            scanf("%s", newID);
+
+            while(!checkInteger(newID))
+            {
+                printf("You Entered Wrong! \n");
+                printf("Please Enter valid id : ");
+                scanf("%s", newID);
+                count++;
+                if(count ==5 )
+                {
+                    printf("Programme finished!\n");
+                    return;
+                }
+
+            }
+
+            int updatenewID = atoi(newID);
+            student.id = updatenewID;
+
+
+            fseek(file, -sizeof(StudentDetails),1);
+            fwrite(&student, sizeof(StudentDetails), 1, file);
+            found = 1;
+            printf("Record updated successfully.\n");
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        printf("No record found for ID %s.\n", updateID);
+    }
+
+    fclose(file);
+
+
+}
+
+void Update_Student_Name()
+{
+
+    StudentDetails student;
+    char updateName[100];
+
+    printf("Enter the Student Name to update: ");
+    getchar();
+    fgets(updateName, sizeof(updateName), stdin);
+    updateName[strcspn(updateName, "\n")] = 0;
+
+    printf("Enter your id : ");
+    char updateId[30];
+    scanf("%s", updateId);
+
+    int cnt = 0;
+
+    while(!checkInteger(updateId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", updateId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int checkId = atoi(updateId);
+
+
+
+    FILE *file = fopen("Student_Record.txt", "rb+");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        int compareWithName = !strcmp(student.name, updateName);
+        if (compareWithName)
+        {
+
+            if(student.id == checkId)
+            {
+
+                printf("Record found.\n");
+
+                printf("Enter Student New Name: ");
+                getchar();
+                fgets(student.name, sizeof(student.name), stdin);
+                student.name[strcspn(student.name, "\n")] = 0;
+
+                fseek(file, -sizeof(StudentDetails),1);
+                fwrite(&student, sizeof(StudentDetails), 1, file);
+                printf("Record updated successfully.\n");
+                fclose(file);
+                return;
+            }
+        }
+    }
+
+    // if data not found
+    printf("No record found for Name %s.\n", updateName);
+
+
+    fclose(file);
+
+
+}
+
+void Update_Student_Course_Name()
+{
+
+    StudentDetails student;
+    char searchName[100];
+    char searchId[30];
+
+    getchar();
+    printf("Enter your Student Name: ");
+    fgets(searchName, sizeof(searchName), stdin);
+    searchName[strcspn(searchName, "\n")] = 0; // newline character সরানো
+
+    printf("Enter the Student ID to search: ");
+    scanf("%s", searchId);
+
+    int cnt = 0;
+
+    while(!checkInteger(searchId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", searchId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int checkId = atoi(searchId);
+    student.id = checkId;
+
+
+    FILE *file = fopen("Student_Record.txt", "rb+");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+
+        int compareWithName = !strcmp(student.name, searchName);
+        if (compareWithName)
+        {
+
+            if(checkId == student.id)
+            {
+                printf("\n");
+                printf("******* All Course********\n");
+
+                for(int i = 0; i< student.numberOfCourse; i++)
+                {
+
+                    printf("%d. %s\n", i+1, student.course[i]);
+                }
+
+
+                char newCousename[100];
+                printf("How many course you intent to update : ");
+
+                char num1[30];
+                scanf("%s", num1);
+
+                int cnt = 0;
+                while(!checkInteger(num1))
+                {
+
+                    printf("You Entered Wrong! \n");
+                    printf("Please Enter Valid Number : ");
+                    scanf("%s", num1);
+                    cnt++;
+                    if(cnt ==5 )
+                    {
+                        printf("Programme finished!\n");
+                        return;
+                    }
+
+                }
+
+                int n = atoi(num1);
+                student.num = n;
+
+                int courseNumberEnteredCunter = 0;
+
+                int flag = 0;
+
+                while(n> student.numberOfCourse && courseNumberEnteredCunter<3)
+                {
+
+                    printf("Please enter Valid number to course: ");
+
+                    char numOfCourse[20];
+                    scanf("%s", numOfCourse);
+
+                    if(checkInteger(numOfCourse))
+                    {
+
+                        n = atoi(numOfCourse);
+
+                        if(n<= student.numberOfCourse)
+                        {
+                            flag = 1;
+                        }
+                    }
+                    courseNumberEnteredCunter++;
+
+
+                }
+
+                if(!flag && n>student.numberOfCourse)
+                {
+                    printf("You have entered invalid number of course multiple times\n");
+                    printf("Please Try Again!\n");
+
+
+                    return;
+                }
+
+                for(int i = 0; i< n; i++)
+                {
+                    printf("Enter number correspondent course : ");
+
+                    char userAnswer[30];
+                    scanf("%s", userAnswer);
+                    int cnt = 0;
+                    while(!checkInteger(userAnswer))
+                    {
+
+                        printf("You Entered Wrong! \n");
+                        printf("Please Enter Valid Number : ");
+                        scanf("%s", userAnswer);
+                        cnt++;
+                        if(cnt ==5 )
+                        {
+                            printf("Programme finished!\n");
+                            return;
+                        }
+
+                    }
+
+                    int v = atoi(userAnswer);
+
+                    getchar();
+                    printf("Enter new course Name : ");
+                    fgets(student.course[v-1], sizeof(student.course[v-1]), stdin);
+                    student.course[v-1][strcspn(student.course[v-1], "\n")] = 0; // newline character সরানো
+
+
+                }
+
+
+                for(int i = 0; i< student.numberOfCourse; i++)
+                {
+                    printf("%s\n", student.course[i]);
+                }
+
+
+
+                fseek(file, -sizeof(StudentDetails),1);
+                fwrite(&student, sizeof(StudentDetails), 1, file);
+
+                fclose(file);
+                printf("Course Updated successfully.\n");
+
+
+                return;
+
+            }
+
+
+
+
+        }
+    }
+
+
+
+    printf("No record found for Student Name %s And Student Id %s.\n", searchName,searchId);
+
+
+    fclose(file);
+
+
+
+
+}
+void Update_Student_Course_Mark()
+{
+
+    StudentDetails student;
+    char searchName[100];
+    char searchId[30];
+
+    getchar();
+    printf("Enter your Student Name: ");
+    fgets(searchName, sizeof(searchName), stdin);
+    searchName[strcspn(searchName, "\n")] = 0;
+
+    printf("Enter the Student ID to search: ");
+    scanf("%s", searchId);
+
+    int cnt = 0;
+
+    while(!checkInteger(searchId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", searchId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int checkId = atoi(searchId);
+    student.id = checkId;
+
+
+    FILE *file = fopen("Student_Record.txt", "rb+");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+
+        int compareWithName = !strcmp(student.name, searchName);
+        if (compareWithName)
+        {
+
+            if(checkId == student.id)
+            {
+                printf("\n");
+                printf("******* All Course********\n");
+
+                for(int i = 0; i< student.numberOfCourse; i++)
+                {
+
+                    printf("%d. %s %.2f\n", i+1, student.course[i], student.marks[i]);
+                }
+
+                printf("How many course you intent to update : ");
+
+                char num2[30];
+                scanf("%s", num2);
+                int cnt = 0;
+                while(!checkInteger(num2))
+                {
+
+                    printf("You Entered Wrong! \n");
+                    printf("Please Enter Valid Number : ");
+                    scanf("%s", num2);
+                    cnt++;
+                    if(cnt ==5 )
+                    {
+                        printf("Programme finished!\n");
+                        return;
+                    }
+
+                }
+
+                int n = atoi(num2);
+                student.num = n;
+
+                int courseNumberEnteredCunter = 0;
+
+                int flag = 0;
+
+                while(n> student.numberOfCourse && courseNumberEnteredCunter<3)
+                {
+
+                    printf("Please enter Valid number to course: ");
+
+                    char numOfCourse[20];
+                    scanf("%s", numOfCourse);
+
+                    if(checkInteger(numOfCourse))
+                    {
+
+                        n = atoi(numOfCourse);
+
+                        if(n<= student.numberOfCourse)
+                        {
+                            flag = 1;
+                        }
+                    }
+                    courseNumberEnteredCunter++;
+
+
+                }
+
+                if(!flag && n>student.numberOfCourse)
+                {
+                    printf("You have entered invalid number of course multiple times\n");
+                    printf("Please Try Again!\n");
+
+                    return;
+                }
+
+
+
+                for(int i = 0; i< n; i++)
+                {
+                    printf("Enter number correspondent course : ");
+
+                    char userAnswer[30];
+                    scanf("%s", userAnswer);
+                    int cnt = 0;
+                    while(!checkInteger(userAnswer))
+                    {
+
+                        printf("You Entered Wrong! \n");
+                        printf("Please Enter Valid Number : ");
+                        scanf("%s", userAnswer);
+                        cnt++;
+                        if(cnt ==5 )
+                        {
+                            printf("Programme finished!\n");
+                            return;
+                        }
+
+                    }
+
+                    int v = atoi(userAnswer);
+
+                    getchar();
+                    printf("Enter new mark : ");
+
+                    char newMark[10];
+                    scanf("%s", newMark);
+                    int cnt1 = 0;
+
+                    while(!checkFloat(newMark))
+                    {
+                        printf("Enter valid mark: ");
+                        scanf("%s", &newMark);
+
+                        cnt1++;
+
+                        if(cnt1>4)
+                        {
+
+                            printf("You typed multiple invalid mark!\n");
+                            return;
+
+                        }
+                    }
+
+                    char *ptr;
+                    float studentMark = strtod(newMark, &ptr);
+                    student.marks[i] = studentMark;
+
+
+                }
+
+                for(int i = 0; i< student.numberOfCourse; i++)
+                {
+                    printf("%.2f\n", student.marks[i]);
+                }
+
+
+                fseek(file, -sizeof(StudentDetails),1);
+                fwrite(&student, sizeof(StudentDetails), 1, file);
+                fclose(file);
+                printf("Course Updated successfully.\n");
+
+
+                return;
+
+            }
+
+        }
+    }
+
+
+
+    printf("No record found for Student Name %s And Student Id %s.\n", searchName,searchId);
+
+
+    fclose(file);
+
+
+
+
+}
+
+void Update_Student_Details()
+{
+
+    StudentDetails student;
+
+    char updateId[30];
+
+    printf("Enter the Student ID to update: ");
+    scanf("%s",updateId);
+
+    int cnt = 0;
+
+    while(!checkInteger(updateId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", updateId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int updateID = atoi(updateId);
+    student.id = updateID;
+
+
+    FILE *file = fopen("Student_Record.txt", "rb+");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    int found = 0;
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        if (student.id == updateID)
+        {
+            printf("Record found. Enter new details:\n");
+            printf("Enter Student New Name: ");
+            getchar();
+            fgets(student.name, sizeof(student.name), stdin);
+            student.name[strcspn(student.name, "\n")] = 0; // newline character সরানো
+            printf("Enter Your Student New Course Number: ");
+
+            char CourseNumber[30];
+            scanf("%s", CourseNumber);
+            int count_course = 0;
+            while(!checkInteger(CourseNumber))
+            {
+
+                printf("You Entered Wrong! \n");
+                printf("Please Enter valid Course Number: ");
+                scanf("%s", CourseNumber);
+                count_course++;
+                if(count_course ==5 )
+                {
+                    printf("Programme finished!\n");
+                    return;
+                }
+
+            }
+
+            int  course_N= atoi(CourseNumber);
+
+            student.numberOfCourse = course_N;
+
+            int i;
+
+            for( i=0; i<course_N; i++)
+            {
+                printf("Enter Your Student New Course Name %d : ",i+1);
+                getchar();
+                fgets(student.course[i], sizeof(student.course[i]), stdin);
+                student.course[i][strcspn(student.course[i], "\n")] = 0; // newline character সরানো
+
+
+            }
+            printf("\n");
+
+            for( i=0; i<course_N; i++)
+            {
+                printf("Enter Your Student New Course %d Mark %d : ",i+1,i+1);
+
+                char mark[20];
+                scanf("%s", mark);
+                int cnt = 0;
+
+                while(!checkFloat(mark))
+                {
+                    printf("Enter valid mark: ");
+                    scanf("%s", mark);
+
+                    cnt++;
+
+                    if(cnt>4)
+                    {
+
+                        printf("You typed multiple invalid mark!\n");
+                        return;
+
+                    }
+                }
+
+                char *ptr;
+                float studentMark = strtod(mark, &ptr);
+                student.marks[i] = studentMark;
+
+
+
+            }
+
+            fseek(file, -sizeof(StudentDetails),1);
+            fwrite(&student, sizeof(StudentDetails), 1, file);
+            found = 1;
+            printf("Record updated successfully.\n");
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        printf("No record found for ID %s.\n", updateID);
+    }
+
+    fclose(file);
+
+}
+
+void Update_Students()
+{
+
+    StudentDetails student;
+
+    do
+    {
+        printf("\n");
+        printf("<<-----Student Update System----->>\n");
+        printf("1. Update Student Id\n");
+        printf("2. Update Student Name\n");
+        printf("3. Update Student Course Name\n");
+        printf("4. Update Student Course Mark\n");
+        printf("5. Update All Details\n");
+        printf("6. Exit\n");
+        printf("Choice Your Update (Enter number): ");
+
+        char choice_num[30];
+        scanf("%s", choice_num);
+        int cnt = 0;
+        while(!checkInteger(choice_num))
+        {
+
+            printf("You Entered Wrong! \n");
+            printf("Please Enter valid choice Number : ");
+            scanf("%s", choice_num);
+            cnt++;
+            if(cnt ==5 )
+            {
+                printf("Programme finished!\n");
+                return;
+            }
+
+        }
+
+        int num = atoi(choice_num);
+        student.choice = num;
+
+        switch (student.choice)
+        {
+        case 1:
+            Update_Student_ID();
+            break;
+        case 2:
+            Update_Student_Name();
+            break;
+        case 3:
+            Update_Student_Course_Name();
+            break;
+        case 4:
+            Update_Student_Course_Mark();
+            break;
+        case 5:
+            Update_Student_Details();
+            break;
+        case 6:
+            printf("Exiting...\n");
+            break;
+        default:
+            printf("Invalid choice. Please try again.\n");
+
+        }
+
+
+    }
+    while(student.choice!=6);
+
+
+}
+
+void Delete_Students()
+{
+
+    StudentDetails student;
+
+    char deleteId[30];
+
+    printf("Enter the Student ID to Delete: ");
+    scanf("%s",deleteId);
+
+    int cnt = 0;
+
+    while(!checkInteger(deleteId))
+    {
+
+        printf("You Entered Wrong! \n");
+        printf("Please Enter valid id : ");
+        scanf("%s", deleteId);
+        cnt++;
+        if(cnt ==5 )
+        {
+            printf("Programme finished!\n");
+            return;
+        }
+
+    }
+
+    int deleteID = atoi(deleteId);
+    student.id = deleteID;
+
+
+
+    FILE *file = fopen("Student_Record.txt", "rb");
+    FILE *tempFile = fopen("Temp.txt", "wb");
+    if (!file || !tempFile)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    int found = 0;
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+        if (student.id != deleteID)
+        {
+            fwrite(&student, sizeof(StudentDetails), 1, tempFile);
+        }
+        else
+        {
+            found = 1;
+        }
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    remove("Student_Record.txt");
+    rename("Temp.txt", "Student_Record.txt");
+
+    if (found)
+    {
+        printf("Record deleted successfully.\n");
+    }
+    else
+    {
+        printf("No record found for ID %s.\n", deleteID);
+    }
+
+}
+
+
+void Calculate_Average_Students_marks()
+{
+
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+
+    StudentDetails student;
+    int fount =0;
+    int count = 0;
+    float totalMarks = 0;
+    int totalcourse=0;
+
+    printf("\n");
+
+    printf("Student ID\tStudent Name\tStudent Total Courses\t\tStudent Total Marks\tStudent Average marks\n");
+    printf("--------------------------------------------------------------------------------------------------------------\n");
+
+    while (fread(&student, sizeof(StudentDetails), 1, file))
+    {
+
+        printf("%d\t\t%s\t", student.id, student.name);
+        int i;
+        for(i=0; i<student.numberOfCourse; i++)
+        {
+            totalMarks += student.marks[i];
+            count++;
+
+        }
+        fount =1;
+        float average = totalMarks/count;
+        totalcourse=student.numberOfCourse;
+        printf("\t%d\t\t\t\t%.2f\t\t\t%.2f\n",totalcourse,totalMarks,average);
+        totalMarks=0;
+        count=0;
+
+    }
+
+
+
+    printf("\n");
+
+    if(!fount)
+    {
+        printf("No records found.\n\n");
+    }
+
+
+    fclose(file);
+
+}
+
+// Function to sort students by ID or Name
+void Sort_Students()
+{
+    FILE *file = fopen("Student_Record.txt", "rb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+
+    StudentDetails students[100];
+    int count = 0;
+
+    while (fread(&students[count], sizeof(StudentDetails), 1, file))
+    {
+        count++;
+    }
+    fclose(file);
+
+    // Ask for sorting criteria
+    int choice;
+    printf("Sort by: \n1. ID \n2. Name\nEnter choice: ");
+    scanf("%d", &choice);
+
+    // Sorting by ID
+    if (choice == 1)
+    {
+        for (int i = 0; i < count - 1; i++)
+        {
+            for (int j = 0; j < count - i - 1; j++)
+            {
+                if (students[j].id > students[j + 1].id)
+                {
+                    StudentDetails temp = students[j];
+                    students[j] = students[j + 1];
+                    students[j + 1] = temp;
+                }
+            }
+        }
+    }
+    // Sorting by Name
+    else if (choice == 2)
+    {
+        for (int i = 0; i < count - 1; i++)
+        {
+            for (int j = 0; j < count - i - 1; j++)
+            {
+                if (strcmp(students[j].name, students[j + 1].name) > 0)
+                {
+                    StudentDetails temp = students[j];
+                    students[j] = students[j + 1];
+                    students[j + 1] = temp;
+                }
+            }
+        }
+    }
+    else
+    {
+        printf("Invalid choice!\n");
+        return;
+    }
+
+    file = fopen("Student_Record.txt", "wb");
+    if (!file)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    fwrite(students, sizeof(StudentDetails), count, file);
+    fclose(file);
+
+    printf("Records sorted and saved successfully!\n\n");
+
+}
+
+void About_To_How_Work()
+{
+    StudentDetails student;
+
+    do
+    {
+        printf("\n");
+        printf("<<-----Student Record System How It Work----->>\n\n");
+        printf("-> You will only be able to store the students ID,Name,Number of Courses and Marks. \n");
+        printf("-> A student can have a maximum of 10 courses and a minimum of 1 course. \n");
+        printf("-> Student ID can be a maximum of 4 characters long and unigue for every student.\n");
+        printf("-> Student Name can be a maximum of 15 characters long.\n");
+        printf("-> Student course Name can be a maximum of 10 characters long.\n");
+        printf("-> Student course Marks can be a maximum of 0 to 100 characters.\n");
+        printf("\n");
+
+        printf("Go Back Enter(0)?: ");
+
+        char choice_num[30];
+        scanf("%s", choice_num);
+        int cnt = 0;
+        while(!checkInteger(choice_num))
+        {
+
+            printf("You Entered Wrong! \n");
+            printf("Please Enter valid Number (0)?: ");
+            scanf("%s", choice_num);
+            cnt++;
+            if(cnt ==5 )
+            {
+                printf("Programme finished!\n");
+                return;
+            }
+
+        }
+
+        int num = atoi(choice_num);
+        student.choice = num;
+
+        switch (student.choice)
+        {
+        case 0:
+            printf("Exiting...\n\n");
+            break;
+        default:
+            printf("Invalid choice. Please try again.\n");
+        }
+
+    }
+    while(student.choice);
+}
+
+
+
+
+void menu()
+{
+    StudentDetails student;
+
+    do
+    {
+        printf("\n");
+        printf("<<-----Main Menu----->>\n\n");
+        printf("1. Add Student.\n");
+        printf("2. View Students.\n");
+        printf("3. Search Student.\n");
+        printf("4. Update Student Details.\n");
+        printf("5. Delete Student.\n");
+        printf("6. View Student Average Marks.\n");
+        printf("7. Sort Students Name or ID.\n");
+        printf("8. About How It Work.\n");
+        printf("9. Exit.\n");
+        printf("Enter your choice(Enter number): ");
+
+        char choice_num[30];
+        scanf("%s", choice_num);
+        int cnt = 0;
+        while(!checkInteger(choice_num))
+        {
+
+            printf("You Entered Wrong! \n");
+            printf("Please Enter valid choice Number : ");
+            scanf("%s", choice_num);
+            cnt++;
+            if(cnt ==5 )
+            {
+                printf("Programme finished!\n");
+                return;
+            }
+
+        }
+
+        int num = atoi(choice_num);
+        student.choice = num;
+
+
+        switch (student.choice)
+        {
+        case 1:
+            Add_Students();
+            break;
+        case 2:
+            View_Students();
+            break;
+        case 3:
+            Search_Students();
+            break;
+        case 4:
+            Update_Students();
+            break;
+        case 5:
+            Delete_Students();
+            break;
+        case 6:
+            Calculate_Average_Students_marks();
+            break;
+        case 7:
+            Sort_Students();
+            break;
+        case 8:
+            About_To_How_Work();
+            break;
+        case 9:
+            printf("Exiting...\n\n");
+            break;
+        default:
+            printf("Invalid choice. Please try again.\n");
+        }
+
+    }
+    while (student.choice != 9);
+}
+
+int main()
+{
+    menu();
+    return 0;
+}
